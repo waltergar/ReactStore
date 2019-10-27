@@ -6,52 +6,35 @@ jobs:
       - image: circleci/node:10.16.3
     steps:
       - checkout
-      - run:
-          name: update-npm
-          command: 'sudo npm install -g npm@latest'
       - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
-      - run:
-          name: install-npm
-          command: npm install
-      - save_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
-          paths:
-            - ./node_modules
-  deploy: # deploy script
-    working_directory: ~/repository
-    docker:
-      - image: circleci/node:10.16.3
-    steps:
-      - checkout
-      - run:
-          name: update-npm
-          command: 'sudo npm install -g npm@latest'
-      - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
       - run:
           name: Install Dependencies
           command: |
             sudo npm install -g firebase-tools && yarn install
       - save_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
           paths:
-            - ./node_modules
-      - run: # build react
-          name: react-build
-          command: npm run build
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+ 
+      - run:
+          name: Run Unit Tests
+          command: |
+            yarn test
+
+      - run:
+          name: Create Build
+          command: |
+            yarn build
+            ls -al
+            cp -R build /tmp/build
+
+      - store_artifacts:
+          path: /tmp/build
       - run:
           name: Deploy Firebase
           command: firebase deploy --token "$FIREBASE_TOKEN" --only hosting
 
-workflows:
-  version: 2
-  build-and-deploy:
-    jobs:
-      - build # perform this first
-      - deploy: # perform second
-          requires:
-            - build
-          filters: # only for the master branch
-            branches:
-              only: master
