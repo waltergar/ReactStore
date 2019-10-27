@@ -35,6 +35,10 @@ jobs:
       - store_artifacts:
           path: /tmp/build
       - run:
-          name: Deploy Firebase
-          command: firebase deploy --token "$FIREBASE_TOKEN" --only hosting
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              ls -al
+              firebase use default
+              firebase deploy --token=$FIREBASE_TOKEN --non-interactive
+            fi
 
