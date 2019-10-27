@@ -39,9 +39,6 @@ jobs:
       - run: # build react
           name: react-build
           command: npm run build
-      - run: # make  copy of .firebaserc
-          name: generate-firebaserc
-          command: cp .firebaserc.example .firebaserc
       - run: # modify .firebaserc with env variable
           name: modify-firebaserc
           command: sed -i "s/\[YOUR\-PROJECT\-ID\]/$FIREBASE_PROJECT_ID/g" .firebaserc
