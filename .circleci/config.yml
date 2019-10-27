@@ -42,4 +42,4 @@ jobs:
           command: npm run build
       - run:
           name: Deploy Firebase
-          command: firebase deploy --token "$FIREBASE_TOKEN" --non-interactive
+          command: firebase deploy --token "$FIREBASE_TOKEN" --only hosting
